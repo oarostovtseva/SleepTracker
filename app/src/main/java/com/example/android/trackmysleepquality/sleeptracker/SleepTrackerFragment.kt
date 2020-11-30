@@ -24,6 +24,7 @@ import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.GridLayoutManager
 import com.example.android.trackmysleepquality.R
 import com.example.android.trackmysleepquality.database.SleepDatabase
 import com.example.android.trackmysleepquality.databinding.FragmentSleepTrackerBinding
@@ -37,6 +38,7 @@ import com.google.android.material.snackbar.Snackbar
 class SleepTrackerFragment : Fragment() {
 
     lateinit var viewModel: SleepTrackerViewModel
+    val adapter = SleepNightAdapter()
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
@@ -52,6 +54,7 @@ class SleepTrackerFragment : Fragment() {
         val viewModelFactory = SleepTrackerViewModelFactory(dataSource!!, application)
         viewModel = viewModelFactory.create(SleepTrackerViewModel::class.java)
         binding.sleepTrackerViewModel = viewModel
+        binding.sleepList.adapter = adapter
 
         subscribe()
 
@@ -77,6 +80,9 @@ class SleepTrackerFragment : Fragment() {
                 ).show()
                 viewModel.doneShowingSnackbar()
             }
+        })
+        viewModel.nights.observe(this, Observer { nights ->
+            adapter.submitList(nights)
         })
     }
 }
