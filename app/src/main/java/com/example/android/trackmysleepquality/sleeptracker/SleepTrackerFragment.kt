@@ -51,6 +51,9 @@ class SleepTrackerFragment : Fragment() {
         val application = requireNotNull(this.activity).application
         val dataSource = SleepDatabase.getInstance(application)?.sleepDatabaseDao
 
+        val manager = GridLayoutManager(activity, 3)
+        binding.sleepList.layoutManager = manager
+
         val viewModelFactory = SleepTrackerViewModelFactory(dataSource!!, application)
         viewModel = viewModelFactory.create(SleepTrackerViewModel::class.java)
         binding.sleepTrackerViewModel = viewModel
