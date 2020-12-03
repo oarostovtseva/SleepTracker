@@ -37,8 +37,8 @@ import com.google.android.material.snackbar.Snackbar
  */
 class SleepTrackerFragment : Fragment() {
 
-    lateinit var viewModel: SleepTrackerViewModel
-    val adapter = SleepNightAdapter()
+    private lateinit var viewModel: SleepTrackerViewModel
+    private lateinit var adapter: SleepNightAdapter
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
@@ -52,11 +52,22 @@ class SleepTrackerFragment : Fragment() {
         val dataSource = SleepDatabase.getInstance(application)?.sleepDatabaseDao
 
         val manager = GridLayoutManager(activity, 3)
+        manager.spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {
+            override fun getSpanSize(position: Int) =
+                    when (position) {
+                        0 -> 3
+                        else -> 1
+                    }
+        }
         binding.sleepList.layoutManager = manager
 
         val viewModelFactory = SleepTrackerViewModelFactory(dataSource!!, application)
         viewModel = viewModelFactory.create(SleepTrackerViewModel::class.java)
         binding.sleepTrackerViewModel = viewModel
+
+        adapter = SleepNightAdapter(SleepNightListener { nightId ->
+            viewModel.onSleepNightClicked(nightId)
+        })
         binding.sleepList.adapter = adapter
 
         subscribe()
@@ -86,6 +97,14 @@ class SleepTrackerFragment : Fragment() {
         })
         viewModel.nights.observe(this, Observer { nights ->
             adapter.submitList(nights)
+        })
+
+        viewModel.navigateToSleepDataQuality.observe(this, Observer { night ->
+            night?.let {
+                findNavController().navigate(SleepTrackerFragmentDirections
+                        .actionSleepTrackerFragmentToSleepDetailFragment(it))
+                viewModel.onSleepDataQualityNavigated()
+            }
         })
     }
 }
